@@ -168,6 +168,18 @@ button:disabled {
   font-weight: 700;
 }
 
+.version-icon.image {
+  overflow: hidden;
+  border: 1px solid #d8dee7;
+  background: #ffffff;
+}
+
+.version-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .status-pill,
 .row-title span {
   display: inline-flex;
@@ -205,6 +217,16 @@ button:disabled {
 
 .detail-header > div {
   flex: 1;
+  min-width: 0;
+}
+
+.detail-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-title > div {
   min-width: 0;
 }
 

@@ -28,6 +28,7 @@ async function createWowFixture(): Promise<string> {
     join(retail, 'Interface', 'AddOns', 'ColorAddon', 'ColorAddon.toc'),
     '## Title: |cff008945Cool|r|cff1e9a4e|r|cff3faa4fdown Ma|r|cff5fb64anag|r|cff7ac243er Ce|r|cff8ccd00ntered|r'
   );
+  await writeFile(join(retail, 'Wow.exe'), '');
   await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'GoodAddon.lua'), 'state = {}');
   await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'SavedVariableAlias.lua'), 'state = {}');
   await writeFile(
@@ -54,6 +55,7 @@ describe('WoW directory scanning', () => {
     expect(versions[0]).toMatchObject({
       id: '_retail_',
       label: 'Retail',
+      executablePath: join(root, '_retail_', 'Wow.exe'),
       isManageable: true,
       missingPaths: []
     });

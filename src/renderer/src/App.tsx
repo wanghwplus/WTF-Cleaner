@@ -262,9 +262,7 @@ function HomeView(props: {
           <div className="version-grid">
             {props.versions.map((version) => (
               <article className="version-card" key={version.id}>
-                <div className="version-icon" aria-hidden="true">
-                  {version.id === '_retail_' ? 'R' : version.id === '_classic_' ? 'C' : 'A'}
-                </div>
+                <VersionIcon version={version} />
                 <div>
                   <h3>{version.label}</h3>
                   <p>{version.path}</p>
@@ -285,6 +283,24 @@ function HomeView(props: {
         </section>
       ) : null}
     </section>
+  );
+}
+
+function VersionIcon({ version }: { version: WowVersion }): JSX.Element {
+  const fallback = version.id === '_retail_' ? 'R' : version.id === '_classic_' ? 'C' : 'A';
+
+  if (version.iconDataUrl) {
+    return (
+      <div className="version-icon image">
+        <img src={version.iconDataUrl} alt={`${version.label} icon`} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="version-icon" aria-hidden="true">
+      {fallback}
+    </div>
   );
 }
 
@@ -329,9 +345,12 @@ function VersionDetail(props: {
         <button className="icon-button" onClick={props.onBack} title={t('list.back')} aria-label={t('list.back')}>
           <ArrowLeft size={18} />
         </button>
-        <div>
-          <h2>{props.activeVersion.label}</h2>
-          <p>{props.activeVersion.path}</p>
+        <div className="detail-title">
+          <VersionIcon version={props.activeVersion} />
+          <div>
+            <h2>{props.activeVersion.label}</h2>
+            <p>{props.activeVersion.path}</p>
+          </div>
         </div>
         <button onClick={props.onRescan} disabled={props.isBusy}>
           <RefreshCw size={16} />

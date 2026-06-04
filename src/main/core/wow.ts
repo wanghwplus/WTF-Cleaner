@@ -5,12 +5,25 @@ import type { AddonEntry, AddonScanRow, VersionScanResult, WowVersion, WowVersio
 type VersionDefinition = {
   id: WowVersionId;
   label: string;
+  executableCandidates: string[];
 };
 
 const versionDefinitions: VersionDefinition[] = [
-  { id: '_retail_', label: 'Retail' },
-  { id: '_classic_', label: 'Classic' },
-  { id: '_classic_era_', label: 'Classic Era / Anniversary' }
+  {
+    id: '_retail_',
+    label: 'Retail',
+    executableCandidates: ['Wow.exe', 'Wow-64.exe', 'World of Warcraft.app']
+  },
+  {
+    id: '_classic_',
+    label: 'Classic',
+    executableCandidates: ['WowClassic.exe', 'Wow.exe', 'World of Warcraft Classic.app', 'World of Warcraft.app']
+  },
+  {
+    id: '_classic_era_',
+    label: 'Classic Era / Anniversary',
+    executableCandidates: ['WowClassic.exe', 'Wow.exe', 'World of Warcraft Classic Era.app', 'World of Warcraft.app']
+  }
 ];
 
 const versionIds = new Set(versionDefinitions.map((definition) => definition.id));
@@ -65,6 +78,7 @@ export async function discoverWowVersions(selectedPath: string): Promise<WowVers
       path: versionPath,
       addonsPath,
       wtfPath,
+      executablePath: await findExecutablePath(versionPath, definition.executableCandidates),
       isManageable: missingPaths.length === 0,
       missingPaths
     });
@@ -278,6 +292,26 @@ async function containsVersionDirectory(path: string): Promise<boolean> {
   }
 
   return false;
+}
+
+async function findExecutablePath(versionPath: string, candidates: string[]): Promise<string | undefined> {
+  for (const candidate of candidates) {
+    const path = join(versionPath, candidate);
+    if (await pathExists(path)) {
+      return path;
+    }
+  }
+
+  return undefined;
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await stat(path);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function isDirectory(path: string): Promise<boolean> {

@@ -8,6 +8,8 @@ export type WowVersion = {
   path: string;
   addonsPath: string;
   wtfPath: string;
+  executablePath?: string;
+  iconDataUrl?: string;
   isManageable: boolean;
   missingPaths: string[];
 };

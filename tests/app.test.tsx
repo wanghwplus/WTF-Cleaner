@@ -11,6 +11,8 @@ const mockVersion = {
   path: '/wow/_retail_',
   addonsPath: '/wow/_retail_/Interface/AddOns',
   wtfPath: '/wow/_retail_/WTF',
+  executablePath: '/wow/_retail_/Wow.exe',
+  iconDataUrl: 'data:image/png;base64,wow-icon',
   isManageable: true,
   missingPaths: []
 };
@@ -102,7 +104,17 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Select WoW Directory' }));
 
     await waitFor(() => expect(api.selectWowDirectory).toHaveBeenCalledTimes(1));
+    expect(await screen.findByRole('img', { name: 'Retail icon' })).toHaveAttribute('src', 'data:image/png;base64,wow-icon');
     expect(await screen.findByRole('button', { name: 'Open Retail' })).toBeInTheDocument();
+  });
+
+  it('shows the selected game version icon on the detail page', async () => {
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Select WoW Directory' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Open Retail' }));
+
+    expect(await screen.findByRole('img', { name: 'Retail icon' })).toHaveAttribute('src', 'data:image/png;base64,wow-icon');
   });
 
   it('lets users switch to Simplified Chinese', async () => {

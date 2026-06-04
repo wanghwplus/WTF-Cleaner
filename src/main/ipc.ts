@@ -28,7 +28,7 @@ export function registerIpcHandlers(): void {
     }
 
     const wowRootPath = result.filePaths[0];
-    const versions = await discoverWowVersions(wowRootPath);
+    const versions = await discoverWowVersionsWithIcons(wowRootPath);
     await configStore.update({ wowRootPath });
 
     return {
@@ -38,7 +38,7 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle('wow:discover-versions', async (_event, selectedPath: string) => {
-    const versions = await discoverWowVersions(selectedPath);
+    const versions = await discoverWowVersionsWithIcons(selectedPath);
     await configStore.update({ wowRootPath: selectedPath });
     return versions;
   });
@@ -80,4 +80,26 @@ export function registerIpcHandlers(): void {
 
 function toPortablePath(path: string): string {
   return path.split(sep).join('/');
+}
+
+async function discoverWowVersionsWithIcons(selectedPath: string): Promise<WowVersion[]> {
+  return withVersionIcons(await discoverWowVersions(selectedPath));
+}
+
+async function withVersionIcons(versions: WowVersion[]): Promise<WowVersion[]> {
+  return Promise.all(
+    versions.map(async (version) => {
+      if (!version.executablePath) {
+        return version;
+      }
+
+      try {
+        const icon = await app.getFileIcon(version.executablePath, { size: 'large' });
+        const iconDataUrl = icon.toDataURL();
+        return iconDataUrl ? { ...version, iconDataUrl } : version;
+      } catch {
+        return version;
+      }
+    })
+  );
 }
