@@ -273,6 +273,12 @@ button:disabled {
   background: #eef8f4;
 }
 
+.status-message.error {
+  border-color: #e1a17f;
+  color: #9b3b13;
+  background: #fff8f4;
+}
+
 .table-shell {
   display: grid;
   gap: 10px;

@@ -67,4 +67,14 @@ describe('App', () => {
     await waitFor(() => expect(api.setLanguage).toHaveBeenCalledWith('zh-CN'));
     expect(await screen.findByRole('button', { name: '选择魔兽世界目录' })).toBeInTheDocument();
   });
+
+  it('shows an error when directory selection fails', async () => {
+    installMockApi().selectWowDirectory = vi.fn().mockRejectedValue(new Error('preload unavailable'));
+
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Select WoW Directory' }));
+
+    expect(await screen.findByText('Directory selection failed')).toBeInTheDocument();
+  });
 });

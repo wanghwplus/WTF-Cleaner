@@ -18,12 +18,12 @@ It helps you select a local World of Warcraft installation, detect installed gam
 
 ## Release Files
 
-Prebuilt v0.0.1 artifacts are stored in `release/`:
+Prebuilt v0.0.2 artifacts are stored in `release/`:
 
-- `WTF-Cleaner-v0.0.1-mac-arm64.dmg`
-- `WTF-Cleaner-v0.0.1-mac-x64.dmg`
-- `WTF-Cleaner-v0.0.1-win-x64.exe`
-- `WTF-Cleaner-v0.0.1-win-portable-x64.exe`
+- `WTF-Cleaner-v0.0.2-mac-arm64.dmg`
+- `WTF-Cleaner-v0.0.2-mac-x64.dmg`
+- `WTF-Cleaner-v0.0.2-win-x64.exe`
+- `WTF-Cleaner-v0.0.2-win-portable-x64.exe`
 
 The release files are unsigned. macOS Gatekeeper and Windows SmartScreen may show warnings until proper signing certificates are configured.
 

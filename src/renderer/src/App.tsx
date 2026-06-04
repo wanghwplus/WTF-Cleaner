@@ -17,6 +17,7 @@ export default function App(): JSX.Element {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<string>();
+  const [homeStatus, setHomeStatus] = useState<string>();
   const [isBusy, setIsBusy] = useState(false);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function App(): JSX.Element {
 
   async function handleSelectDirectory(): Promise<void> {
     setIsBusy(true);
+    setHomeStatus(undefined);
     try {
       const result = await window.wtfCleaner.selectWowDirectory();
       if (result) {
@@ -50,6 +52,8 @@ export default function App(): JSX.Element {
         setScanResult(undefined);
         setSelectedRows(new Set());
       }
+    } catch {
+      setHomeStatus(t('home.selectFailed'));
     } finally {
       setIsBusy(false);
     }
@@ -196,6 +200,7 @@ export default function App(): JSX.Element {
         <HomeView
           wowRootPath={wowRootPath}
           versions={versions}
+          status={homeStatus}
           isBusy={isBusy}
           onSelectDirectory={() => void handleSelectDirectory()}
           onOpenVersion={(version) => void openVersion(version)}
@@ -208,6 +213,7 @@ export default function App(): JSX.Element {
 function HomeView(props: {
   wowRootPath?: string;
   versions: WowVersion[];
+  status?: string;
   isBusy: boolean;
   onSelectDirectory: () => void;
   onOpenVersion: (version: WowVersion) => void;
@@ -223,6 +229,7 @@ function HomeView(props: {
           <FolderOpen size={18} />
           {t('home.selectDirectory')}
         </button>
+        {props.status ? <div className="status-message error">{props.status}</div> : null}
       </div>
 
       {props.wowRootPath ? (

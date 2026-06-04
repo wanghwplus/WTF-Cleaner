@@ -2,6 +2,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, shell } from 'electron';
 import { join } from 'node:path';
 import { registerIpcHandlers } from './ipc';
+import { getPreloadPath } from './window';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -11,7 +12,7 @@ function createWindow(): void {
     minHeight: 640,
     title: 'WTF Cleaner',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: getPreloadPath(__dirname),
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false
