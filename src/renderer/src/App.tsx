@@ -376,7 +376,7 @@ function VersionDetail(props: {
         </label>
       </div>
 
-      <div className="tabs" role="tablist" aria-label={t('list.filter')}>
+      <div className="tabs" role="tablist" aria-label={t('list.tabsLabel')}>
         <button
           role="tab"
           aria-selected={props.activeTab === 'normal'}

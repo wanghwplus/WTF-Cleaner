@@ -90,8 +90,7 @@ button:disabled {
   color: #5d6978;
 }
 
-.language-select,
-.filter-select {
+.language-select {
   display: grid;
   gap: 4px;
   min-width: 120px;
@@ -100,7 +99,6 @@ button:disabled {
 }
 
 .language-select select,
-.filter-select select,
 .search-box input {
   min-height: 25px;
   border: 1px solid #c8d0da;
