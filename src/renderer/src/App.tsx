@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import i18n, { supportedLanguages } from './i18n';
 import type { AddonScanRow, DeleteTarget, SupportedLanguage, VersionScanResult, WowVersion } from '../../shared/types';
 
-type FilterMode = 'all' | 'orphan' | 'addons' | 'hasConfig' | 'noConfig';
+type TabMode = 'normal' | 'orphan';
+
+const pageSize = 20;
 
 export default function App(): JSX.Element {
   const { t } = useTranslation();
@@ -14,7 +16,8 @@ export default function App(): JSX.Element {
   const [activeVersion, setActiveVersion] = useState<WowVersion>();
   const [scanResult, setScanResult] = useState<VersionScanResult>();
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<FilterMode>('all');
+  const [activeTab, setActiveTab] = useState<TabMode>('normal');
+  const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<string>();
   const [homeStatus, setHomeStatus] = useState<string>();
@@ -51,6 +54,8 @@ export default function App(): JSX.Element {
         setActiveVersion(undefined);
         setScanResult(undefined);
         setSelectedRows(new Set());
+        setActiveTab('normal');
+        setPage(1);
       }
     } catch {
       setHomeStatus(t('home.selectFailed'));
@@ -62,6 +67,8 @@ export default function App(): JSX.Element {
   async function openVersion(version: WowVersion): Promise<void> {
     setActiveVersion(version);
     setSelectedRows(new Set());
+    setActiveTab('normal');
+    setPage(1);
     await scanVersion(version);
   }
 
@@ -115,14 +122,9 @@ export default function App(): JSX.Element {
     const normalizedQuery = query.trim().toLowerCase();
 
     return rows.filter((row) => {
-      const matchesFilter =
-        filter === 'all' ||
-        (filter === 'orphan' && row.isOrphan) ||
-        (filter === 'addons' && Boolean(row.addon)) ||
-        (filter === 'hasConfig' && row.wtfEntries.length > 0) ||
-        (filter === 'noConfig' && row.wtfEntries.length === 0);
+      const matchesTab = activeTab === 'orphan' ? row.isOrphan : !row.isOrphan;
 
-      if (!matchesFilter) {
+      if (!matchesTab) {
         return false;
       }
 
@@ -142,7 +144,11 @@ export default function App(): JSX.Element {
 
       return haystack.includes(normalizedQuery);
     });
-  }, [filter, query, scanResult]);
+  }, [activeTab, query, scanResult]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleRows.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedRows = visibleRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <main className="app-shell">
@@ -171,10 +177,14 @@ export default function App(): JSX.Element {
         <VersionDetail
           activeVersion={activeVersion}
           scanResult={scanResult}
-          visibleRows={visibleRows}
+          visibleRows={pagedRows}
+          normalCount={scanResult?.rows.filter((row) => !row.isOrphan).length ?? 0}
+          orphanCount={scanResult?.rows.filter((row) => row.isOrphan).length ?? 0}
           selectedRows={selectedRows}
-          filter={filter}
+          activeTab={activeTab}
           query={query}
+          currentPage={currentPage}
+          totalPages={totalPages}
           status={status}
           isBusy={isBusy}
           onBack={() => {
@@ -183,8 +193,15 @@ export default function App(): JSX.Element {
             setSelectedRows(new Set());
           }}
           onRescan={() => void scanVersion()}
-          onFilterChange={setFilter}
-          onQueryChange={setQuery}
+          onTabChange={(nextTab) => {
+            setActiveTab(nextTab);
+            setPage(1);
+          }}
+          onQueryChange={(nextQuery) => {
+            setQuery(nextQuery);
+            setPage(1);
+          }}
+          onPageChange={setPage}
           onToggleRow={(rowId) => {
             const next = new Set(selectedRows);
             if (next.has(rowId)) {
@@ -286,15 +303,20 @@ function VersionDetail(props: {
   activeVersion: WowVersion;
   scanResult?: VersionScanResult;
   visibleRows: AddonScanRow[];
+  normalCount: number;
+  orphanCount: number;
   selectedRows: Set<string>;
-  filter: FilterMode;
+  activeTab: TabMode;
   query: string;
+  currentPage: number;
+  totalPages: number;
   status?: string;
   isBusy: boolean;
   onBack: () => void;
   onRescan: () => void;
-  onFilterChange: (filter: FilterMode) => void;
+  onTabChange: (tab: TabMode) => void;
   onQueryChange: (query: string) => void;
+  onPageChange: (page: number) => void;
   onToggleRow: (rowId: string) => void;
   onDelete: (createBackup: boolean) => void;
 }): JSX.Element {
@@ -333,16 +355,27 @@ function VersionDetail(props: {
             onChange={(event) => props.onQueryChange(event.target.value)}
           />
         </label>
-        <label className="filter-select">
-          <span>{t('list.filter')}</span>
-          <select value={props.filter} onChange={(event) => props.onFilterChange(event.target.value as FilterMode)}>
-            <option value="all">{t('list.all')}</option>
-            <option value="orphan">{t('list.orphan')}</option>
-            <option value="addons">{t('list.addons')}</option>
-            <option value="hasConfig">{t('list.hasConfig')}</option>
-            <option value="noConfig">{t('list.noConfig')}</option>
-          </select>
-        </label>
+      </div>
+
+      <div className="tabs" role="tablist" aria-label={t('list.filter')}>
+        <button
+          role="tab"
+          aria-selected={props.activeTab === 'normal'}
+          aria-label={t('list.normalTab')}
+          className={props.activeTab === 'normal' ? 'tab active' : 'tab'}
+          onClick={() => props.onTabChange('normal')}
+        >
+          {t('list.normalTab')} ({props.normalCount})
+        </button>
+        <button
+          role="tab"
+          aria-selected={props.activeTab === 'orphan'}
+          aria-label={t('list.orphan')}
+          className={props.activeTab === 'orphan' ? 'tab active' : 'tab'}
+          onClick={() => props.onTabChange('orphan')}
+        >
+          {t('list.orphan')} ({props.orphanCount})
+        </button>
       </div>
 
       <div className="bulk-bar">
@@ -372,7 +405,7 @@ function VersionDetail(props: {
               />
               <div className="row-main">
                 <div className="row-title">
-                  <strong>{row.addon?.title ?? row.id}</strong>
+                  <strong>{getRowTitle(row)}</strong>
                   {row.isOrphan ? <span>{t('list.orphanBadge')}</span> : null}
                 </div>
                 <div className="row-meta">
@@ -398,6 +431,16 @@ function VersionDetail(props: {
         ) : (
           <div className="empty-list">{props.scanResult ? t('list.noRows') : t('list.scanEmpty')}</div>
         )}
+      </div>
+
+      <div className="pagination" aria-label="Pagination">
+        <button disabled={props.currentPage <= 1} onClick={() => props.onPageChange(props.currentPage - 1)}>
+          {t('list.previous')}
+        </button>
+        <span>{t('list.pageStatus', { current: props.currentPage, total: props.totalPages })}</span>
+        <button disabled={props.currentPage >= props.totalPages} onClick={() => props.onPageChange(props.currentPage + 1)}>
+          {t('list.next')}
+        </button>
       </div>
     </section>
   );
@@ -434,6 +477,10 @@ function buildDeleteTargets(version: WowVersion, rows: AddonScanRow[]): DeleteTa
   }
 
   return targets;
+}
+
+function getRowTitle(row: AddonScanRow): string {
+  return row.addon?.title ?? row.wtfEntries[0]?.fileName.replace(/\.lua(?:\.bak)?$/i, '') ?? row.id;
 }
 
 function relativeToVersion(versionPath: string, path: string): string {

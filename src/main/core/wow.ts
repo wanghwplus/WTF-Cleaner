@@ -133,7 +133,7 @@ async function parseToc(path: string): Promise<Record<string, string>> {
   for (const line of content.split(/\r?\n/)) {
     const match = /^##\s*([^:]+):\s*(.*)$/.exec(line);
     if (match) {
-      metadata[match[1].trim()] = match[2].trim();
+      metadata[match[1].trim()] = cleanTocValue(match[2]);
     }
   }
 
@@ -303,6 +303,13 @@ function isSavedVariablesFile(fileName: string): boolean {
 
 function stripSavedVariablesExtension(fileName: string): string {
   return fileName.replace(/\.lua(?:\.bak)?$/i, '');
+}
+
+function cleanTocValue(value: string): string {
+  return value
+    .replace(/\|c[0-9a-fA-F]{8}/g, '')
+    .replace(/\|r/g, '')
+    .trim();
 }
 
 function toPortablePath(path: string): string {

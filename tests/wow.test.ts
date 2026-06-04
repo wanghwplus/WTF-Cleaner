@@ -11,6 +11,7 @@ async function createWowFixture(): Promise<string> {
 
   await mkdir(join(retail, 'Interface', 'AddOns', 'GoodAddon'), { recursive: true });
   await mkdir(join(retail, 'Interface', 'AddOns', 'FolderNamedAddon'), { recursive: true });
+  await mkdir(join(retail, 'Interface', 'AddOns', 'ColorAddon'), { recursive: true });
   await mkdir(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables'), { recursive: true });
   await mkdir(join(retail, 'WTF', 'Account', 'AccountOne', 'RealmOne', 'CharacterOne', 'SavedVariables'), {
     recursive: true
@@ -23,6 +24,10 @@ async function createWowFixture(): Promise<string> {
     '## Title: Alias Addon',
     '## Version: 4.5.6'
   ].join('\n'));
+  await writeFile(
+    join(retail, 'Interface', 'AddOns', 'ColorAddon', 'ColorAddon.toc'),
+    '## Title: |cff008945Cool|r|cff1e9a4e|r|cff3faa4fdown Ma|r|cff5fb64anag|r|cff7ac243er Ce|r|cff8ccd00ntered|r'
+  );
   await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'GoodAddon.lua'), 'state = {}');
   await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'SavedVariableAlias.lua'), 'state = {}');
   await writeFile(
@@ -60,11 +65,14 @@ describe('WoW directory scanning', () => {
 
     const scan = await scanWowVersion(version);
 
-    expect(scan.addons).toHaveLength(2);
+    expect(scan.addons).toHaveLength(3);
     expect(scan.addons.find((addon) => addon.id === 'goodaddon')).toMatchObject({
       id: 'goodaddon',
       title: 'Good Addon',
       version: '1.2.3'
+    });
+    expect(scan.addons.find((addon) => addon.id === 'coloraddon')).toMatchObject({
+      title: 'Cooldown Manager Centered'
     });
     expect(scan.wtfEntries).toHaveLength(3);
     expect(scan.orphanCount).toBe(1);
