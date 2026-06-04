@@ -57,10 +57,7 @@ The release script:
 - Generates macOS DMG and Windows EXE artifacts.
 - Keeps only the latest `.dmg` and `.exe` files in `release/`.
 
-## Git Remote
+## Authors
 
-Repository remote:
-
-```text
-git@github.com:wanghwplus/WTF-Cleaner.git
-```
+- wanghwplus
+- OpenAI Codex
