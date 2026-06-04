@@ -1,8 +1,8 @@
 {
   "name": "wtf-cleaner",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Cross-platform World of Warcraft WTF and AddOns cleaner.",
-  "main": "dist/main/index.js",
+  "main": "out/main/index.js",
   "type": "module",
   "scripts": {
     "dev": "electron-vite dev",
@@ -11,7 +11,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint . --max-warnings 0",
-    "package": "electron-builder"
+    "package": "electron-builder",
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -50,8 +51,9 @@
       "output": "release"
     },
     "files": [
-      "dist/**"
+      "out/**"
     ],
+    "artifactName": "WTF-Cleaner-v${version}-${os}-${arch}.${ext}",
     "mac": {
       "target": [
         "dmg"
@@ -59,8 +61,15 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "portable"
       ]
+    },
+    "nsis": {
+      "artifactName": "WTF-Cleaner-v${version}-win-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "WTF-Cleaner-v${version}-win-portable-${arch}.${ext}"
     }
   },
   "pnpm": {

@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'release/**', 'node_modules/**', 'coverage/**']
+    ignores: ['dist/**', 'out/**', 'release/**', 'node_modules/**', 'coverage/**']
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -17,6 +17,15 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': 'error'
+    }
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly'
+      }
     }
   }
 );
