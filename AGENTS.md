@@ -87,7 +87,8 @@ pnpm release
   - `WTF-Cleaner-v<version>-win-x64.exe`
   - `WTF-Cleaner-v<version>-win-portable-x64.exe`
 - 不要把 `release/` 二进制产物作为普通 Git 文件提交；GitHub 普通 Git 单文件限制为 100 MiB。
-- 发布安装包到 GitHub Releases，使用 `gh`：
+- 默认只生成本地 `release/` 产物，不上传 GitHub Releases。
+- 只有用户明确要求“发布到 GitHub Release/Releases”时，才使用 `gh` 上传：
   ```bash
   gh release create v<version> \
     release/WTF-Cleaner-v<version>-mac-arm64.dmg \
@@ -99,7 +100,7 @@ pnpm release
     --title "WTF Cleaner v<version>" \
     --notes "Release v<version>."
   ```
-- 如果 release 已存在，使用：
+- 如果用户明确要求上传且 release 已存在，使用：
   ```bash
   gh release upload v<version> release/* --repo wanghwplus/WTF-Cleaner --clobber
   ```

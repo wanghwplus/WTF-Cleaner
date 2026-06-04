@@ -56,6 +56,7 @@ The release script:
 - Clears the old `release/` directory.
 - Generates macOS DMG and Windows EXE artifacts.
 - Keeps only the latest `.dmg` and `.exe` files in `release/`.
+- Does not upload to GitHub Releases by default. Upload release assets only when explicitly requested.
 
 ## Authors
 
