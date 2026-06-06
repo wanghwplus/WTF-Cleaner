@@ -1,6 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { basename, dirname, join, relative, sep } from 'node:path';
-import type { AddonEntry, AddonScanRow, VersionScanResult, WowVersion, WowVersionId, WtfEntry } from '../../shared/types';
+import type { AddonEntry, AddonScanRow, VersionScanResult, WowVersion, WowVersionId, WtfEntry } from '../../shared/types.js';
 
 type VersionDefinition = {
   id: WowVersionId;
@@ -99,6 +99,7 @@ export async function scanWowVersion(version: WowVersion): Promise<VersionScanRe
     wtfEntries,
     rows,
     orphanCount: wtfEntries.filter((entry) => entry.isOrphan).length,
+    blizzardCount: wtfEntries.filter((entry) => entry.isBlizzard).length,
     scannedAt: new Date().toISOString()
   };
 }
@@ -202,7 +203,8 @@ async function scanWtfEntries(versionPath: string, wtfPath: string, addonAliases
     .map((entry) => ({
       ...entry,
       addonId: addonAliases.get(entry.addonId) ?? entry.addonId,
-      isOrphan: !addonAliases.has(entry.addonId)
+      isOrphan: !addonAliases.has(entry.addonId) && !entry.isBlizzard,
+      isBlizzard: !addonAliases.has(entry.addonId) && entry.isBlizzard
     }))
     .sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 }
@@ -236,7 +238,8 @@ async function scanSavedVariablesDirectory(
         account,
         realm,
         character,
-        isOrphan: false
+        isOrphan: false,
+        isBlizzard: isBlizzardSavedVariable(file.name)
       };
     });
 }
@@ -262,7 +265,8 @@ function buildRows(addons: AddonEntry[], wtfEntries: WtfEntry[]): AddonScanRow[]
         id,
         addon,
         wtfEntries: entries,
-        isOrphan: !addon && entries.length > 0
+        isOrphan: !addon && entries.length > 0 && entries.every((entry) => entry.isOrphan),
+        isBlizzard: !addon && entries.length > 0 && entries.every((entry) => entry.isBlizzard)
       };
     })
     .sort((a, b) => rowLabel(a).localeCompare(rowLabel(b)));
@@ -337,6 +341,10 @@ function isSavedVariablesFile(fileName: string): boolean {
 
 function stripSavedVariablesExtension(fileName: string): string {
   return fileName.replace(/\.lua(?:\.bak)?$/i, '');
+}
+
+function isBlizzardSavedVariable(fileName: string): boolean {
+  return stripSavedVariablesExtension(fileName).toLowerCase().startsWith('blizzard_');
 }
 
 function cleanTocValue(value: string): string {

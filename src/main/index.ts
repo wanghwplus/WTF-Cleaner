@@ -1,8 +1,8 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, shell } from 'electron';
 import { join } from 'node:path';
-import { registerIpcHandlers } from './ipc';
-import { getPreloadPath } from './window';
+import { registerIpcHandlers } from './ipc.js';
+import { getPreloadPath } from './window.js';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({

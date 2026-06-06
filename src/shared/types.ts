@@ -37,6 +37,7 @@ export type WtfEntry = {
   realm?: string;
   character?: string;
   isOrphan: boolean;
+  isBlizzard: boolean;
 };
 
 export type AddonScanRow = {
@@ -44,6 +45,7 @@ export type AddonScanRow = {
   addon?: AddonEntry;
   wtfEntries: WtfEntry[];
   isOrphan: boolean;
+  isBlizzard: boolean;
 };
 
 export type VersionScanResult = {
@@ -52,6 +54,7 @@ export type VersionScanResult = {
   wtfEntries: WtfEntry[];
   rows: AddonScanRow[];
   orphanCount: number;
+  blizzardCount: number;
   scannedAt: string;
 };
 

@@ -338,6 +338,11 @@ button:disabled {
   background: #fff8f4;
 }
 
+.addon-row.blizzard {
+  border-color: #b7d9cb;
+  background: #f4fbf8;
+}
+
 .row-main {
   display: grid;
   gap: 5px;

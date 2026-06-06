@@ -33,6 +33,7 @@ function installMockApi(): WtfCleanerApi {
       wtfEntries: [],
       rows: [],
       orphanCount: 0,
+      blizzardCount: 0,
       scannedAt: new Date().toISOString()
     }),
     backupDelete: vi.fn().mockResolvedValue({ deletedPaths: [] })
@@ -42,14 +43,16 @@ function installMockApi(): WtfCleanerApi {
   return api;
 }
 
-function createRows(count: number, isOrphan = false): AddonScanRow[] {
+function createRows(count: number, state: 'installed' | 'orphan' | 'blizzard' = 'installed'): AddonScanRow[] {
   return Array.from({ length: count }, (_, index) => {
-    const id = isOrphan ? `orphan-${index + 1}` : `addon-${index + 1}`;
-    const title = isOrphan ? `Orphan ${index + 1}` : `Addon ${index + 1}`;
+    const isOrphan = state === 'orphan';
+    const isBlizzard = state === 'blizzard';
+    const id = isOrphan ? `orphan-${index + 1}` : isBlizzard ? `blizzard_${index + 1}` : `addon-${index + 1}`;
+    const title = isOrphan ? `Orphan ${index + 1}` : isBlizzard ? `Blizzard ${index + 1}` : `Addon ${index + 1}`;
 
     return {
       id,
-      addon: isOrphan
+      addon: isOrphan || isBlizzard
         ? undefined
         : {
             id,
@@ -59,7 +62,7 @@ function createRows(count: number, isOrphan = false): AddonScanRow[] {
             path: `/wow/_retail_/Interface/AddOns/${title}`,
             tocFiles: [`${title}.toc`]
           },
-      wtfEntries: isOrphan
+      wtfEntries: isOrphan || isBlizzard
         ? [
             {
               id: `${id}-wtf`,
@@ -69,11 +72,13 @@ function createRows(count: number, isOrphan = false): AddonScanRow[] {
               relativePath: `WTF/Account/A/SavedVariables/${title}.lua`,
               scope: 'account',
               account: 'A',
-              isOrphan: true
+              isOrphan,
+              isBlizzard
             }
           ]
         : [],
-      isOrphan
+      isOrphan,
+      isBlizzard
     };
   });
 }
@@ -85,6 +90,7 @@ function createScanResult(rows: AddonScanRow[]): VersionScanResult {
     wtfEntries: rows.flatMap((row) => row.wtfEntries),
     rows,
     orphanCount: rows.filter((row) => row.isOrphan).length,
+    blizzardCount: rows.filter((row) => row.isBlizzard).length,
     scannedAt: new Date().toISOString()
   };
 }
@@ -92,6 +98,7 @@ function createScanResult(rows: AddonScanRow[]): VersionScanResult {
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
     installMockApi();
   });
 
@@ -138,9 +145,9 @@ describe('App', () => {
     expect(await screen.findByText('Directory selection failed')).toBeInTheDocument();
   });
 
-  it('separates installed addons and orphan WTF entries into tabs with 20 rows per page', async () => {
+  it('separates installed addons, orphan WTF entries, and Blizzard saved settings into tabs with 20 rows per page', async () => {
     const api = installMockApi();
-    api.scanVersion = vi.fn().mockResolvedValue(createScanResult([...createRows(21), ...createRows(1, true)]));
+    api.scanVersion = vi.fn().mockResolvedValue(createScanResult([...createRows(21), ...createRows(1, 'orphan'), ...createRows(1, 'blizzard')]));
 
     render(<App />);
 
@@ -149,6 +156,7 @@ describe('App', () => {
 
     expect(await screen.findByRole('tab', { name: 'Installed AddOns' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'Orphan WTF' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Blizzard Settings' })).toBeInTheDocument();
     expect(screen.getByText('Page 1 / 2')).toBeInTheDocument();
     expect(screen.getByText('Addon 20')).toBeInTheDocument();
     expect(screen.queryByText('Addon 21')).not.toBeInTheDocument();
@@ -157,5 +165,50 @@ describe('App', () => {
 
     expect(screen.getByText('Orphan 1')).toBeInTheDocument();
     expect(screen.queryByText('Addon 1')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Blizzard Settings' }));
+
+    expect(screen.getByText('Blizzard 1')).toBeInTheDocument();
+    expect(screen.queryByText('Orphan 1')).not.toBeInTheDocument();
+  });
+
+  it('asks for confirmation before deleting selected rows', async () => {
+    const api = installMockApi();
+    api.scanVersion = vi.fn().mockResolvedValue(createScanResult(createRows(1, 'orphan')));
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Select WoW Directory' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Open Retail' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Orphan WTF' }));
+    await userEvent.click(await screen.findByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(api.backupDelete).not.toHaveBeenCalled();
+  });
+
+  it('refreshes stats from a new scan after deleting selected rows', async () => {
+    const api = installMockApi();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    api.scanVersion = vi
+      .fn()
+      .mockResolvedValueOnce(createScanResult(createRows(1, 'orphan')))
+      .mockResolvedValueOnce(createScanResult([]));
+    api.backupDelete = vi.fn().mockResolvedValue({ deletedPaths: ['/wow/_retail_/WTF/Account/A/SavedVariables/Orphan 1.lua'] });
+
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Select WoW Directory' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Open Retail' }));
+    await userEvent.click(await screen.findByRole('tab', { name: 'Orphan WTF' }));
+    await userEvent.click(await screen.findByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(api.scanVersion).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('WTF files').closest('.stat')).toHaveTextContent('0');
+    expect(screen.getByRole('tab', { name: 'Orphan WTF' })).toHaveTextContent('Orphan WTF (0)');
+    expect(screen.queryByText('Orphan 1')).not.toBeInTheDocument();
   });
 });

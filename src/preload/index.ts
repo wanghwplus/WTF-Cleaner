@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AppConfig, BackupDeleteResult, DeleteTarget, SupportedLanguage, VersionScanResult, WowVersion } from '../shared/types';
+import type { AppConfig, BackupDeleteResult, DeleteTarget, SupportedLanguage, VersionScanResult, WowVersion } from '../shared/types.js';
 
 export type DirectorySelectionResult = {
   wowRootPath: string;

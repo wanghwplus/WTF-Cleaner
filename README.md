@@ -12,6 +12,7 @@ It helps you select a local World of Warcraft installation, detect installed gam
 - Scans account-level WTF files from `WTF/Account/<account>/SavedVariables`.
 - Scans character-level WTF files from `WTF/Account/<account>/<realm>/<character>/SavedVariables`.
 - Highlights orphan WTF files when no matching AddOn exists.
+- Separates Blizzard saved settings from third-party orphan WTF files.
 - Supports single selection, multi-selection, delete, and backup before delete.
 - Stores backups under the app data directory.
 - Supports English, Simplified Chinese, and Traditional Chinese.

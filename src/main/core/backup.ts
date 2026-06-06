@@ -1,7 +1,7 @@
 import AdmZip from 'adm-zip';
 import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
-import type { BackupDeleteResult, DeleteTarget, WowVersionId } from '../../shared/types';
+import type { BackupDeleteResult, DeleteTarget, WowVersionId } from '../../shared/types.js';
 
 export type BackupAndDeleteInput = {
   backupRoot: string;

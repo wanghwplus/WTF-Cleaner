@@ -36,6 +36,7 @@ export const resources = {
         search: 'Search addons or WTF files',
         tabsLabel: 'AddOn groups',
         orphan: 'Orphan WTF',
+        blizzard: 'Blizzard Settings',
         selected: '{{count}} selected',
         delete: 'Delete',
         backupDelete: 'Backup & Delete',
@@ -48,10 +49,15 @@ export const resources = {
         account: 'Account',
         character: 'Character',
         orphanBadge: 'Orphan WTF',
+        blizzardBadge: 'Blizzard',
         noRows: 'No matching entries',
         scanEmpty: 'No AddOns or WTF files found',
         scanFailed: 'Scan failed',
         deleteFailed: 'Delete failed',
+        confirmDelete: 'Delete {{count}} selected item?',
+        confirmDelete_plural: 'Delete {{count}} selected items?',
+        confirmBackupDelete: 'Back up and delete {{count}} selected item?',
+        confirmBackupDelete_plural: 'Back up and delete {{count}} selected items?',
         backupCreated: 'Backup created',
         deleted: 'Deleted {{count}} item',
         deleted_plural: 'Deleted {{count}} items'
@@ -59,7 +65,8 @@ export const resources = {
       stats: {
         addons: 'AddOns',
         configs: 'WTF files',
-        orphan: 'Orphans'
+        orphan: 'Orphans',
+        blizzard: 'Blizzard'
       }
     }
   },
@@ -90,6 +97,7 @@ export const resources = {
         search: '搜索插件或 WTF 文件',
         tabsLabel: '插件分组',
         orphan: '孤儿 WTF',
+        blizzard: 'Blizzard 设置',
         selected: '已选择 {{count}} 项',
         delete: '删除',
         backupDelete: '备份并删除',
@@ -102,17 +110,21 @@ export const resources = {
         account: '账号',
         character: '角色',
         orphanBadge: '孤儿 WTF',
+        blizzardBadge: 'Blizzard',
         noRows: '没有匹配项',
         scanEmpty: '未找到插件或 WTF 文件',
         scanFailed: '扫描失败',
         deleteFailed: '删除失败',
+        confirmDelete: '删除已选择的 {{count}} 项？',
+        confirmBackupDelete: '备份并删除已选择的 {{count}} 项？',
         backupCreated: '已创建备份',
         deleted: '已删除 {{count}} 项'
       },
       stats: {
         addons: '插件',
         configs: 'WTF 文件',
-        orphan: '孤儿配置'
+        orphan: '孤儿配置',
+        blizzard: 'Blizzard'
       }
     }
   },
@@ -143,6 +155,7 @@ export const resources = {
         search: '搜尋插件或 WTF 檔案',
         tabsLabel: '插件分組',
         orphan: '孤兒 WTF',
+        blizzard: 'Blizzard 設定',
         selected: '已選擇 {{count}} 項',
         delete: '刪除',
         backupDelete: '備份並刪除',
@@ -155,17 +168,21 @@ export const resources = {
         account: '帳號',
         character: '角色',
         orphanBadge: '孤兒 WTF',
+        blizzardBadge: 'Blizzard',
         noRows: '沒有符合項目',
         scanEmpty: '未找到插件或 WTF 檔案',
         scanFailed: '掃描失敗',
         deleteFailed: '刪除失敗',
+        confirmDelete: '刪除已選擇的 {{count}} 項？',
+        confirmBackupDelete: '備份並刪除已選擇的 {{count}} 項？',
         backupCreated: '已建立備份',
         deleted: '已刪除 {{count}} 項'
       },
       stats: {
         addons: '插件',
         configs: 'WTF 檔案',
-        orphan: '孤兒設定'
+        orphan: '孤兒設定',
+        blizzard: 'Blizzard'
       }
     }
   }

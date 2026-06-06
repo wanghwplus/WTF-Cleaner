@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from '../../shared/types';
+import type { SupportedLanguage } from '../../shared/types.js';
 
 const simplifiedChineseLocales = new Set(['zh', 'zh-cn', 'zh-hans', 'zh-sg']);
 const traditionalChineseLocales = new Set(['zh-tw', 'zh-hk', 'zh-mo', 'zh-hant']);

@@ -1,10 +1,10 @@
 import { app, dialog, ipcMain } from 'electron';
 import { relative, sep } from 'node:path';
-import { backupAndDelete } from './core/backup';
-import { FileConfigStore } from './core/config';
-import { normalizeLanguage } from './core/language';
-import { discoverWowVersions, scanWowVersion } from './core/wow';
-import type { AppConfig, DeleteTarget, SupportedLanguage, WowVersion } from '../shared/types';
+import { backupAndDelete } from './core/backup.js';
+import { FileConfigStore } from './core/config.js';
+import { normalizeLanguage } from './core/language.js';
+import { discoverWowVersions, scanWowVersion } from './core/wow.js';
+import type { AppConfig, DeleteTarget, SupportedLanguage, WowVersion } from '../shared/types.js';
 
 export function registerIpcHandlers(): void {
   const configStore = new FileConfigStore(app.getPath('userData'));

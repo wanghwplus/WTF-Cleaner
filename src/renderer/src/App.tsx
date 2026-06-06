@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import i18n, { supportedLanguages } from './i18n';
 import type { AddonScanRow, DeleteTarget, SupportedLanguage, VersionScanResult, WowVersion } from '../../shared/types';
 
-type TabMode = 'normal' | 'orphan';
+type TabMode = 'normal' | 'orphan' | 'blizzard';
 
 const pageSize = 20;
 
@@ -72,6 +72,10 @@ export default function App(): JSX.Element {
     await scanVersion(version);
   }
 
+  async function refreshScanResult(version: WowVersion): Promise<void> {
+    setScanResult(await window.wtfCleaner.scanVersion(version));
+  }
+
   async function scanVersion(version = activeVersion): Promise<void> {
     if (!version) {
       return;
@@ -80,7 +84,8 @@ export default function App(): JSX.Element {
     setIsBusy(true);
     setStatus(undefined);
     try {
-      setScanResult(await window.wtfCleaner.scanVersion(version));
+      await refreshScanResult(version);
+      setSelectedRows(new Set());
     } catch {
       setStatus(t('list.scanFailed'));
     } finally {
@@ -94,6 +99,16 @@ export default function App(): JSX.Element {
     }
 
     const targets = buildDeleteTargets(activeVersion, scanResult.rows.filter((row) => selectedRows.has(row.id)));
+    if (
+      !window.confirm(
+        t(createBackup ? 'list.confirmBackupDelete' : 'list.confirmDelete', {
+          count: selectedRows.size
+        })
+      )
+    ) {
+      return;
+    }
+
     setIsBusy(true);
     setStatus(undefined);
 
@@ -103,13 +118,13 @@ export default function App(): JSX.Element {
         targets,
         createBackup
       });
+      await refreshScanResult(activeVersion);
       setStatus(
         result.backupPath
           ? `${t('list.backupCreated')}: ${result.backupPath}`
           : t('list.deleted', { count: result.deletedPaths.length })
       );
       setSelectedRows(new Set());
-      await scanVersion(activeVersion);
     } catch {
       setStatus(t('list.deleteFailed'));
     } finally {
@@ -122,7 +137,12 @@ export default function App(): JSX.Element {
     const normalizedQuery = query.trim().toLowerCase();
 
     return rows.filter((row) => {
-      const matchesTab = activeTab === 'orphan' ? row.isOrphan : !row.isOrphan;
+      const matchesTab =
+        activeTab === 'orphan'
+          ? row.isOrphan
+          : activeTab === 'blizzard'
+            ? row.isBlizzard
+            : !row.isOrphan && !row.isBlizzard;
 
       if (!matchesTab) {
         return false;
@@ -178,8 +198,9 @@ export default function App(): JSX.Element {
           activeVersion={activeVersion}
           scanResult={scanResult}
           visibleRows={pagedRows}
-          normalCount={scanResult?.rows.filter((row) => !row.isOrphan).length ?? 0}
+          normalCount={scanResult?.rows.filter((row) => !row.isOrphan && !row.isBlizzard).length ?? 0}
           orphanCount={scanResult?.rows.filter((row) => row.isOrphan).length ?? 0}
+          blizzardCount={scanResult?.rows.filter((row) => row.isBlizzard).length ?? 0}
           selectedRows={selectedRows}
           activeTab={activeTab}
           query={query}
@@ -321,6 +342,7 @@ function VersionDetail(props: {
   visibleRows: AddonScanRow[];
   normalCount: number;
   orphanCount: number;
+  blizzardCount: number;
   selectedRows: Set<string>;
   activeTab: TabMode;
   query: string;
@@ -362,6 +384,7 @@ function VersionDetail(props: {
         <Stat label={t('stats.addons')} value={props.scanResult?.addons.length ?? 0} />
         <Stat label={t('stats.configs')} value={props.scanResult?.wtfEntries.length ?? 0} />
         <Stat label={t('stats.orphan')} value={props.scanResult?.orphanCount ?? 0} tone="warning" />
+        <Stat label={t('stats.blizzard')} value={props.scanResult?.blizzardCount ?? 0} />
       </div>
 
       <div className="toolbar">
@@ -395,6 +418,15 @@ function VersionDetail(props: {
         >
           {t('list.orphan')} ({props.orphanCount})
         </button>
+        <button
+          role="tab"
+          aria-selected={props.activeTab === 'blizzard'}
+          aria-label={t('list.blizzard')}
+          className={props.activeTab === 'blizzard' ? 'tab active' : 'tab'}
+          onClick={() => props.onTabChange('blizzard')}
+        >
+          {t('list.blizzard')} ({props.blizzardCount})
+        </button>
       </div>
 
       <div className="bulk-bar">
@@ -416,7 +448,7 @@ function VersionDetail(props: {
       <div className="table-shell">
         {props.visibleRows.length > 0 ? (
           props.visibleRows.map((row) => (
-            <label className={row.isOrphan ? 'addon-row orphan' : 'addon-row'} key={row.id}>
+            <label className={getRowClassName(row)} key={row.id}>
               <input
                 type="checkbox"
                 checked={props.selectedRows.has(row.id)}
@@ -426,6 +458,7 @@ function VersionDetail(props: {
                 <div className="row-title">
                   <strong>{getRowTitle(row)}</strong>
                   {row.isOrphan ? <span>{t('list.orphanBadge')}</span> : null}
+                  {row.isBlizzard ? <span>{t('list.blizzardBadge')}</span> : null}
                 </div>
                 <div className="row-meta">
                   <span>
@@ -500,6 +533,18 @@ function buildDeleteTargets(version: WowVersion, rows: AddonScanRow[]): DeleteTa
 
 function getRowTitle(row: AddonScanRow): string {
   return row.addon?.title ?? row.wtfEntries[0]?.fileName.replace(/\.lua(?:\.bak)?$/i, '') ?? row.id;
+}
+
+function getRowClassName(row: AddonScanRow): string {
+  if (row.isOrphan) {
+    return 'addon-row orphan';
+  }
+
+  if (row.isBlizzard) {
+    return 'addon-row blizzard';
+  }
+
+  return 'addon-row';
 }
 
 function relativeToVersion(versionPath: string, path: string): string {

@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { AppConfig } from '../../shared/types';
+import type { AppConfig } from '../../shared/types.js';
 
 const configFileName = 'config.json';
 

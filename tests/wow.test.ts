@@ -31,8 +31,13 @@ async function createWowFixture(): Promise<string> {
   await writeFile(join(retail, 'Wow.exe'), '');
   await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'GoodAddon.lua'), 'state = {}');
   await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'SavedVariableAlias.lua'), 'state = {}');
+  await writeFile(join(retail, 'WTF', 'Account', 'AccountOne', 'SavedVariables', 'Blizzard_Console.lua'), 'state = {}');
   await writeFile(
     join(retail, 'WTF', 'Account', 'AccountOne', 'RealmOne', 'CharacterOne', 'SavedVariables', 'MissingAddon.lua'),
+    'state = {}'
+  );
+  await writeFile(
+    join(retail, 'WTF', 'Account', 'AccountOne', 'RealmOne', 'CharacterOne', 'SavedVariables', 'Blizzard_RaidUI.lua'),
     'state = {}'
   );
 
@@ -76,13 +81,20 @@ describe('WoW directory scanning', () => {
     expect(scan.addons.find((addon) => addon.id === 'coloraddon')).toMatchObject({
       title: 'Cooldown Manager Centered'
     });
-    expect(scan.wtfEntries).toHaveLength(3);
+    expect(scan.wtfEntries).toHaveLength(5);
     expect(scan.orphanCount).toBe(1);
+    expect(scan.blizzardCount).toBe(2);
     expect(scan.rows.find((row) => row.id === 'foldernamedaddon')).toMatchObject({
-      isOrphan: false
+      isOrphan: false,
+      isBlizzard: false
     });
     expect(scan.rows.find((row) => row.id === 'missingaddon')).toMatchObject({
-      isOrphan: true
+      isOrphan: true,
+      isBlizzard: false
+    });
+    expect(scan.rows.find((row) => row.id === 'blizzard_console')).toMatchObject({
+      isOrphan: false,
+      isBlizzard: true
     });
   });
 });
